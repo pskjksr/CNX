@@ -75,7 +75,7 @@ body {
 /* Filters */
 .filters {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 14px;
 }
 
@@ -102,6 +102,81 @@ select {
 select:focus {
     border-color: #1769aa;
     box-shadow: 0 0 0 3px rgba(23, 105, 170, 0.1);
+}
+
+/* Date filter */
+.date-picker {
+    position: relative;
+    width: 100%;
+}
+
+.date-picker-button {
+    width: 100%;
+    min-height: 42px;
+    padding: 11px 38px 11px 12px;
+    border: 1px solid #d0d5dd;
+    border-radius: 9px;
+    background: white;
+    font-size: 14px;
+    color: #172b4d;
+    text-align: left;
+    cursor: pointer;
+    position: relative;
+}
+
+.date-picker-button::after {
+    content: "";
+    position: absolute;
+    right: 13px;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid #172b4d;
+    border-bottom: 2px solid #172b4d;
+    transform: translateY(-65%) rotate(45deg);
+}
+
+.date-picker-button:focus {
+    outline: none;
+    border-color: #1769aa;
+    box-shadow: 0 0 0 3px rgba(23, 105, 170, 0.1);
+}
+
+.date-picker-menu {
+    display: none;
+    position: absolute;
+    z-index: 1000;
+    left: 0;
+    right: 0;
+    top: calc(100% + 4px);
+    background: #fff;
+    border: 1px solid #cfd6df;
+    border-radius: 8px;
+    box-shadow: 0 8px 22px rgba(16, 24, 40, 0.16);
+    max-height: 230px;
+    overflow-y: auto;
+    padding: 4px 0;
+}
+
+.date-picker-menu.open {
+    display: block;
+}
+
+.date-picker-option {
+    padding: 9px 12px;
+    font-size: 14px;
+    color: #172b4d;
+    cursor: pointer;
+}
+
+.date-picker-option:hover,
+.date-picker-option.selected {
+    background: #1769aa;
+    color: white;
+}
+
+#date {
+    display: none;
 }
 
 /* Reset */
@@ -421,6 +496,17 @@ tbody tr:hover {
                         <option value="11">พฤศจิกายน</option>
                         <option value="12">ธันวาคม</option>
                     </select>
+                </div>
+
+                <div>
+                    <label>วันที่</label>
+                    <div class="date-picker" id="datePicker">
+                        <button type="button" class="date-picker-button" id="datePickerButton">ทั้งหมด</button>
+                        <div class="date-picker-menu" id="datePickerMenu"></div>
+                        <select id="date" aria-hidden="true" tabindex="-1">
+                            <option value="all">ทั้งหมด</option>
+                        </select>
+                    </div>
                 </div>
 <div>
                     <label>เที่ยวบิน</label>
@@ -874,6 +960,30 @@ function buildDemoData() {
 }
 
 /* =========================
+   WAITING TIME CALCULATION
+========================= */
+
+function calculateWaitingMinutes(startValue, finishValue, fallbackValue = 0) {
+    const parseMinutes = (value) => {
+        const m = String(value || "").match(/^(\d{1,2}):(\d{2})$/);
+        return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+    };
+
+    const start = parseMinutes(startValue);
+    const finish = parseMinutes(finishValue);
+
+    // Always calculate each record from its actual Start/Finish times.
+    // Do not use or add pre-calculated average values when both times exist.
+    if (start !== null && finish !== null) {
+        return finish >= start
+            ? finish - start
+            : finish + 1440 - start;
+    }
+
+    return toNumeric(fallbackValue);
+}
+
+/* =========================
    NORMALIZE ROW
 ========================= */
 
@@ -1040,7 +1150,11 @@ function normalizeRow(row) {
             normalizeTime(finishRaw),
 
         waiting:
-            toNumeric(waitingRaw),
+            calculateWaitingMinutes(
+                normalizeTime(startRaw),
+                normalizeTime(finishRaw),
+                waitingRaw
+            ),
 
         passenger:
             toNumeric(passengerRaw)
@@ -1324,6 +1438,86 @@ function populateFilters() {
     updateServiceOptions();
 }
 
+function updateDateOptions() {
+
+    const dateEl = document.getElementById("date");
+    if (!dateEl) return;
+
+    const year = document.getElementById("year").value;
+    const month = document.getElementById("month").value;
+    const current = dateEl.value;
+
+    // เมื่อยังเลือก "ทั้งหมด" ให้แสดงวันที่ 1–31 ให้เลือกได้เลย
+    // ถ้าเลือกปี/เดือนแล้ว จะปรับจำนวนวันให้ตรงกับเดือนนั้น
+    let maxDay = 31;
+
+    if (month !== "all") {
+        const y = year === "all" ? 2024 : Number(year);
+        maxDay = new Date(y, Number(month), 0).getDate();
+    }
+
+    const dates = Array.from(
+        { length: maxDay },
+        (_, i) => String(i + 1)
+    );
+
+    dateEl.innerHTML =
+        `<option value="all">ทั้งหมด</option>` +
+        dates.map(d => `<option value="${d}">${d}</option>`).join("");
+
+    if (dates.includes(current)) {
+        dateEl.value = current;
+    } else {
+        dateEl.value = "all";
+    }
+
+    renderDatePicker();
+}
+
+
+function renderDatePicker() {
+    const dateEl = document.getElementById("date");
+    const menu = document.getElementById("datePickerMenu");
+    const button = document.getElementById("datePickerButton");
+    if (!dateEl || !menu || !button) return;
+
+    const options = Array.from(dateEl.options);
+    menu.innerHTML = options.map(opt =>
+        `<div class="date-picker-option ${opt.value === dateEl.value ? "selected" : ""}" data-value="${opt.value}">${opt.textContent}</div>`
+    ).join("");
+
+    button.textContent = dateEl.options[dateEl.selectedIndex]?.textContent || "ทั้งหมด";
+
+    menu.querySelectorAll(".date-picker-option").forEach(option => {
+        option.addEventListener("click", () => {
+            dateEl.value = option.dataset.value;
+            button.textContent = option.textContent;
+            menu.classList.remove("open");
+            updateDashboard();
+            renderDatePicker();
+        });
+    });
+}
+
+function setupDatePicker() {
+    const picker = document.getElementById("datePicker");
+    const button = document.getElementById("datePickerButton");
+    const menu = document.getElementById("datePickerMenu");
+    if (!picker || !button || !menu) return;
+
+    button.addEventListener("click", (e) => {
+        e.stopPropagation();
+        menu.classList.toggle("open");
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!picker.contains(e.target)) menu.classList.remove("open");
+    });
+
+    renderDatePicker();
+}
+
+
 function updateServiceOptions() {
 
     const serviceEl = document.getElementById("service");
@@ -1368,14 +1562,15 @@ function updateKpi(data) {
         );
 
 
-    const avgWaiting =
-        data.length
-            ? data.reduce(
-                (sum, row) =>
-                    sum + toNumeric(row.waiting),
-                0
-            ) / data.length
-            : 0;
+    const waitingValues = data
+        .map(row => calculateWaitingMinutes(row.start, row.finish, row.waiting))
+        .filter(value => Number.isFinite(value));
+
+    // Mean of the actual waiting-time observations after filtering.
+    // This is NOT an average of daily/service averages.
+    const avgWaiting = waitingValues.length
+        ? waitingValues.reduce((sum, value) => sum + value, 0) / waitingValues.length
+        : 0;
 
 
 
@@ -1441,7 +1636,11 @@ function updateCards(data) {
         if (!byService[row.service]) continue;
         byService[row.service].records += 1;
         byService[row.service].passengers += toNumeric(row.passenger);
-        byService[row.service].waiting += toNumeric(row.waiting);
+        byService[row.service].waiting += calculateWaitingMinutes(
+            row.start,
+            row.finish,
+            row.waiting
+        );
     }
 
     cards.innerHTML = serviceList.map(service => {
@@ -1561,6 +1760,7 @@ function getFilteredRows() {
 
     const year = document.getElementById("year").value;
     const month = document.getElementById("month").value;
+    const date = document.getElementById("date").value;
     const flight = document.getElementById("flight").value;
     const direction = document.getElementById("direction").value;
     const service = document.getElementById("service").value;
@@ -1568,6 +1768,7 @@ function getFilteredRows() {
     return state.rows.filter(row => {
         if (year !== "all" && String(row.year) !== String(year)) return false;
         if (month !== "all" && String(row.month) !== String(month)) return false;
+        if (date !== "all" && String(row.date).slice(-2) !== String(date).padStart(2, "0")) return false;
         if (flight !== "all" && row.flight !== flight) return false;
         if (direction !== "all" && row.direction !== direction) return false;
         if (service !== "all" && row.service !== service) return false;
@@ -1650,6 +1851,9 @@ function resetFilters() {
     document.getElementById("month").value =
         "all";
 
+    document.getElementById("date").value =
+        "all";
+
     document.getElementById("flight").value =
         "all";
 
@@ -1659,7 +1863,8 @@ function resetFilters() {
     document.getElementById("service").value =
         "all";
 
-
+    updateDateOptions();
+    renderDatePicker();
     updateDashboard();
 }
 
@@ -1785,8 +1990,6 @@ async function loadExcel() {
    ========================= */
 
 [
-    "year",
-    "month",
     "flight",
     "service"
 ].forEach(id => {
@@ -1795,6 +1998,16 @@ async function loadExcel() {
 
     if (el) {
         el.addEventListener("change", updateDashboard);
+    }
+});
+
+["year", "month"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+        el.addEventListener("change", () => {
+            updateDateOptions();
+            updateDashboard();
+        });
     }
 });
 
@@ -1812,7 +2025,10 @@ document.getElementById("direction").addEventListener("change", () => {
 
 window.addEventListener(
     "DOMContentLoaded",
-    loadExcel
+    () => {
+        setupDatePicker();
+        loadExcel();
+    }
 );
 
 </script>
