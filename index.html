@@ -491,7 +491,11 @@ tbody tr:hover {
                 📋 รายละเอียดข้อมูล
             </div>
         <div id="excelButtonWrap" style="margin:14px 0 18px; text-align:left;">
-            <a id="excelButton" href="https://o365cmu-my.sharepoint.com/:x:/g/personal/salintip_ain_cmu_ac_th/IQBKHTSvvaTARISYnNkCFvu9AW7ueXj1gUnASjGdjB3BCSs?e=yT0DPf" target="_blank" rel="noopener noreferrer" class="month-link-btn" style="display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:9px;text-decoration:none;font-weight:700;">📊 เปิดไฟล์ Excel ↗</a>
+            <a id="excelButton" href="https://o365cmu-my.sharepoint.com/:x:/g/personal/salintip_ain_cmu_ac_th/IQBKHTSvvaTARISYnNkCFvu9AW7ueXj1gUnASjGdjB3BCSs?e=yT0DPf" target="_blank" rel="noopener noreferrer" class="month-link-btn" style="display:inline-flex;align-items:center;gap:12px;padding:11px 18px;background:#fff;border:1px solid #d9e2f3;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.08);text-decoration:none;color:#1f4e79;font-weight:700;font-size:15px;transition:.2s;cursor:pointer;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,.15)'" onmouseout="this.style.boxShadow='0 2px 6px rgba(0,0,0,.08)'">
+                <span style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:#217346;border-radius:8px;color:#fff;font-size:20px;font-weight:800;flex-shrink:0;">X</span>
+                <span><span id="excelButtonTitle" style="display:block;">เปิดไฟล์ Excel</span><span id="excelButtonSub" style="display:block;margin-top:2px;font-size:12px;color:#777;font-weight:500;">ดูข้อมูลต้นฉบับ</span></span>
+                <span style="font-size:18px;margin-left:4px;">↗</span>
+            </a>
         </div>
 
             <div id="rowCount" class="muted" style="margin-bottom: 12px;">
@@ -1577,6 +1581,8 @@ function getFilteredRows() {
 
 function updateExcelButton() {
     const button = document.getElementById("excelButton");
+    const title = document.getElementById("excelButtonTitle");
+    const sub = document.getElementById("excelButtonSub");
     if (!button) return;
 
     const year = document.getElementById("year").value;
@@ -1584,18 +1590,30 @@ function updateExcelButton() {
     const baseUrl = "https://o365cmu-my.sharepoint.com/:x:/g/personal/salintip_ain_cmu_ac_th/IQBKHTSvvaTARISYnNkCFvu9AW7ueXj1gUnASjGdjB3BCSs?e=yT0DPf";
 
     if (year !== "all" && month !== "all") {
-        const monthName = monthNames[Number(month)];
+        const monthNumber = Number(month);
+        const monthName = monthNames[monthNumber];
+        const monthNameEn = [
+            "", "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ][monthNumber];
         const yy = String(year).slice(-2);
-        const sheetName = `${monthName} ${yy}`;
+
+        // ชื่อชีตในไฟล์ Excel เป็นภาษาอังกฤษ เช่น January 26
+        const sheetName = `${monthNameEn} ${yy}`;
         const activeCell = encodeURIComponent(`'${sheetName}'!A1`);
         button.href = `${baseUrl}&activeCell=${activeCell}`;
-        button.textContent = `📊 เปิด Excel เดือน ${monthName} ${year} ↗`;
+
+        // ข้อความบน Dashboard แสดงเป็นภาษาไทย แต่ลิงก์ใช้ชื่อชีตจริงใน Excel
+        title.textContent = `เปิด Excel เดือน ${monthName} ${year}`;
+        sub.textContent = `เปิดข้อมูลชีต ${sheetName}`;
     } else if (year !== "all") {
         button.href = baseUrl;
-        button.textContent = `📊 เปิดไฟล์ Excel ปี ${year} ↗`;
+        title.textContent = `เปิดไฟล์ Excel ปี ${year}`;
+        sub.textContent = "ดูข้อมูลต้นฉบับ";
     } else {
         button.href = baseUrl;
-        button.textContent = "📊 เปิดไฟล์ Excel ↗";
+        title.textContent = "เปิดไฟล์ Excel";
+        sub.textContent = "ดูข้อมูลต้นฉบับ";
     }
 }
 
