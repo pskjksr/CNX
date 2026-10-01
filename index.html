@@ -75,27 +75,50 @@ body {
 /* Filters */
 .filters {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 14px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 18px 22px;
+    align-items: start;
+}
+
+.filters > div {
+    min-width: 0;
+}
+
+/* ตัวกรองแนวนอน: 5 ช่องแถวแรก และ Service อยู่แถวถัดไป */
+.filters > div:nth-child(1),
+.filters > div:nth-child(2),
+.filters > div:nth-child(3),
+.filters > div:nth-child(4),
+.filters > div:nth-child(5) {
+    grid-row: 1;
+}
+
+.filters > div:nth-child(6) {
+    grid-column: 1;
+    grid-row: 2;
 }
 
 label {
     display: block;
+    height: 20px;
     font-size: 13px;
     color: #667085;
-    margin-bottom: 7px;
+    margin-bottom: 8px;
     font-weight: 600;
+    line-height: 20px;
 }
 
 select {
     width: 100%;
-    padding: 11px 12px;
-    border: 1px solid #d0d5dd;
-    border-radius: 9px;
+    height: 48px;
+    padding: 0 42px 0 14px;
+    border: 1px solid #cfd8e3;
+    border-radius: 12px;
     background: white;
     font-size: 14px;
     color: #172b4d;
     outline: none;
+    line-height: 48px;
     transition: 0.2s;
 }
 
@@ -104,24 +127,37 @@ select:focus {
     box-shadow: 0 0 0 3px rgba(23, 105, 170, 0.1);
 }
 
+/* Month picker */
+.month-picker{position:relative;width:100%;z-index:30;}
+.month-picker>select{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;}
+.month-picker-button{width:100%;height:48px;padding:0 42px 0 14px;border:1px solid #cfd8e3;border-radius:12px;background:#fff;font-size:14px;color:#172b4d;text-align:left;cursor:pointer;position:relative;line-height:48px;}
+.month-picker-button::after{content:"";position:absolute;right:13px;top:50%;width:8px;height:8px;border-right:2px solid #172b4d;border-bottom:2px solid #172b4d;transform:translateY(-65%) rotate(45deg);}
+.month-picker-button:focus{outline:none;border-color:#1769aa;box-shadow:0 0 0 3px rgba(23,105,170,.1);}
+.month-picker-menu{display:none;position:absolute;z-index:2000;left:0;right:0;top:calc(100% + 4px);bottom:auto;background:#fff;border:1px solid #98a2b3;border-radius:0 0 4px 4px;box-shadow:0 8px 20px rgba(16,24,40,.16);max-height:200px;overflow-y:auto;}
+.month-picker-menu.open{display:block;}
+.month-picker-option{padding:10px 12px;font-size:14px;color:#172b4d;background:#fff;cursor:pointer;}
+.month-picker-option:hover,.month-picker-option.selected{background:#1769aa;color:#fff;}
+
 /* Date filter */
 .date-picker {
+     z-index:31;
     position: relative;
     width: 100%;
 }
 
 .date-picker-button {
     width: 100%;
-    min-height: 42px;
-    padding: 11px 38px 11px 12px;
-    border: 1px solid #d0d5dd;
-    border-radius: 9px;
+    height: 48px;
+    padding: 0 42px 0 14px;
+    border: 1px solid #cfd8e3;
+    border-radius: 12px;
     background: white;
     font-size: 14px;
     color: #172b4d;
     text-align: left;
     cursor: pointer;
     position: relative;
+    line-height: 48px;
 }
 
 .date-picker-button::after {
@@ -244,6 +280,18 @@ select:focus {
     color: #667085;
     font-size: 13px;
     padding: 8px 0;
+}
+
+
+@media (max-width: 700px) {
+    .filters { grid-template-columns: 1fr; }
+    .filters > div:nth-child(n) { grid-column: 1; }
+    .filters > div:nth-child(1) { grid-row: 1; }
+    .filters > div:nth-child(2) { grid-row: 2; }
+    .filters > div:nth-child(3) { grid-row: 3; }
+    .filters > div:nth-child(4) { grid-row: 4; }
+    .filters > div:nth-child(5) { grid-row: 5; }
+    .filters > div:nth-child(6) { grid-row: 6; }
 }
 
 @media (max-width: 600px) {
@@ -422,6 +470,7 @@ tbody tr:hover {
     .filters {
         grid-template-columns: repeat(2, 1fr);
     }
+    .filters > div:nth-child(1), .filters > div:nth-child(2), .filters > div:nth-child(3), .filters > div:nth-child(4), .filters > div:nth-child(5), .filters > div:nth-child(6) { grid-column: auto; grid-row: auto; }
 
     .kpis {
         grid-template-columns: repeat(2, 1fr);
@@ -791,7 +840,7 @@ body{
 }
 .title:first-letter{font-size:22px;}
 
-.filters{gap:18px;}
+.filters{gap:18px;overflow:visible;}
 label{
   color:#587086;
   font-size:12px;
@@ -816,7 +865,20 @@ select:focus,.date-picker-button:focus{
   border-color:#1592cf;
   box-shadow:0 0 0 4px rgba(37,167,223,.13),0 7px 18px rgba(11,103,178,.06);
 }
-.date-picker-button{padding:12px 44px 12px 15px;}
+.date-picker-button{
+  width:100%;
+  min-height:50px;
+  height:50px;
+  box-sizing:border-box;
+  padding:0 42px 0 15px;
+  text-align:left;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  line-height:normal;
+  font-family:inherit;
+  font-weight:400;
+}
 .date-picker-button::after{right:17px;border-color:#214b68;}
 .date-picker-menu{
   top:calc(100% + 8px);
@@ -939,6 +1001,9 @@ tbody tr:hover{background:#eaf6fc;}
 }
 
 </style>
+<style>
+.date-picker-button{display:block;width:100%;box-sizing:border-box;text-align:left!important;padding:12px 42px 12px 15px!important;}
+</style>
 </head>
 
 <body>
@@ -972,21 +1037,25 @@ tbody tr:hover{background:#eaf6fc;}
 
                 <div>
                     <label>เดือน</label>
-                    <select id="month">
-                        <option value="all">ทั้งหมด</option>
-                        <option value="1">มกราคม</option>
-                        <option value="2">กุมภาพันธ์</option>
-                        <option value="3">มีนาคม</option>
-                        <option value="4">เมษายน</option>
-                        <option value="5">พฤษภาคม</option>
-                        <option value="6">มิถุนายน</option>
-                        <option value="7">กรกฎาคม</option>
-                        <option value="8">สิงหาคม</option>
-                        <option value="9">กันยายน</option>
-                        <option value="10">ตุลาคม</option>
-                        <option value="11">พฤศจิกายน</option>
-                        <option value="12">ธันวาคม</option>
-                    </select>
+                    <div class="month-picker" id="monthPicker">
+                        <button type="button" class="month-picker-button" id="monthPickerButton">ทั้งหมด</button>
+                        <div class="month-picker-menu" id="monthPickerMenu"></div>
+                        <select id="month" aria-hidden="true" tabindex="-1">
+                            <option value="all">ทั้งหมด</option>
+                            <option value="1">มกราคม</option>
+                            <option value="2">กุมภาพันธ์</option>
+                            <option value="3">มีนาคม</option>
+                            <option value="4">เมษายน</option>
+                            <option value="5">พฤษภาคม</option>
+                            <option value="6">มิถุนายน</option>
+                            <option value="7">กรกฎาคม</option>
+                            <option value="8">สิงหาคม</option>
+                            <option value="9">กันยายน</option>
+                            <option value="10">ตุลาคม</option>
+                            <option value="11">พฤศจิกายน</option>
+                            <option value="12">ธันวาคม</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div>
@@ -1172,28 +1241,6 @@ function toNumeric(value) {
     return Number.isFinite(num) ? num : 0;
 }
 
-
-
-/* =========================
-   EXCEL AVERAGE EQUIVALENT
-========================= */
-
-// Equivalent to Excel =AVERAGE(range):
-// averages the individual numeric observations and ignores blanks/text.
-// It never averages or adds pre-calculated averages.
-function excelAverage(values) {
-    const nums = values
-        .map(value => {
-            if (value === null || value === undefined || value === "") return null;
-            const num = (typeof value === "number") ? value : Number(String(value).replace(/,/g, ""));
-            return Number.isFinite(num) ? num : null;
-        })
-        .filter(value => value !== null);
-
-    return nums.length
-        ? nums.reduce((sum, value) => sum + value, 0) / nums.length
-        : 0;
-}
 
 /* =========================
    TEXT
@@ -2006,9 +2053,58 @@ function renderDatePicker() {
             dateEl.value = option.dataset.value;
             button.textContent = option.textContent;
             menu.classList.remove("open");
+            const monthMenu = document.getElementById("monthPickerMenu");
+            if (monthMenu) monthMenu.classList.remove("open");
             updateDashboard();
             renderDatePicker();
         });
+    });
+}
+
+function renderMonthPicker() {
+    const monthEl = document.getElementById("month");
+    const menu = document.getElementById("monthPickerMenu");
+    const button = document.getElementById("monthPickerButton");
+    if (!monthEl || !menu || !button) return;
+
+    const options = Array.from(monthEl.options);
+    menu.innerHTML = options.map(opt =>
+        `<div class="month-picker-option ${opt.value === monthEl.value ? "selected" : ""}" data-value="${opt.value}">${opt.textContent}</div>`
+    ).join("");
+
+    button.textContent = monthEl.options[monthEl.selectedIndex]?.textContent || "ทั้งหมด";
+
+    menu.querySelectorAll(".month-picker-option").forEach(option => {
+        option.addEventListener("click", () => {
+            monthEl.value = option.dataset.value;
+            button.textContent = option.textContent;
+            menu.classList.remove("open");
+            const dateMenu = document.getElementById("datePickerMenu");
+            if (dateMenu) dateMenu.classList.remove("open");
+            updateDateOptions();
+            updateDashboard();
+            renderMonthPicker();
+        });
+    });
+}
+
+function setupMonthPicker() {
+    const picker = document.getElementById("monthPicker");
+    const button = document.getElementById("monthPickerButton");
+    const menu = document.getElementById("monthPickerMenu");
+    if (!picker || !button || !menu) return;
+
+    renderMonthPicker();
+
+    button.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const dateMenu = document.getElementById("datePickerMenu");
+        if (dateMenu) dateMenu.classList.remove("open");
+        menu.classList.toggle("open");
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!picker.contains(e.target)) menu.classList.remove("open");
     });
 }
 
@@ -2020,6 +2116,8 @@ function setupDatePicker() {
 
     button.addEventListener("click", (e) => {
         e.stopPropagation();
+        const monthMenu = document.getElementById("monthPickerMenu");
+        if (monthMenu) monthMenu.classList.remove("open");
         menu.classList.toggle("open");
     });
 
@@ -2064,6 +2162,15 @@ function updateServiceOptions() {
 
 
 /* =========================
+   AVERAGE HELPER (Excel AVERAGE)
+========================= */
+function averageValues(values) {
+    const valid = values.map(Number).filter(Number.isFinite);
+    return valid.length ? valid.reduce((total, value) => total + value, 0) / valid.length : 0;
+}
+
+
+/* =========================
    KPI
 ========================= */
 
@@ -2077,14 +2184,13 @@ function updateKpi(data) {
         );
 
 
-    const waitingValues = data.map(row =>
-        calculateWaitingMinutes(row.start, row.finish, row.waiting)
-    );
+    const waitingValues = data
+        .map(row => calculateWaitingMinutes(row.start, row.finish, row.waiting))
+        .filter(value => Number.isFinite(value));
 
-    // Same principle as Excel =AVERAGE(Waiting_Time_Range):
-    // average the individual waiting-time observations only.
-    // Do NOT add/average daily, service, or other pre-calculated averages.
-    const avgWaiting = excelAverage(waitingValues);
+    // Mean of the actual waiting-time observations after filtering.
+    // This is NOT an average of daily/service averages.
+    const avgWaiting = averageValues(waitingValues);
 
 
 
@@ -2142,7 +2248,8 @@ function updateCards(data) {
             service,
             records: 0,
             passengers: 0,
-            waiting: 0
+            waiting: 0,
+            waitingValues: []
         };
     });
 
@@ -2150,19 +2257,20 @@ function updateCards(data) {
         if (!byService[row.service]) continue;
         byService[row.service].records += 1;
         byService[row.service].passengers += toNumeric(row.passenger);
-        byService[row.service].waiting += calculateWaitingMinutes(
+        const rowWaiting = calculateWaitingMinutes(
             row.start,
             row.finish,
             row.waiting
         );
+        if (Number.isFinite(rowWaiting)) {
+            byService[row.service].waiting += rowWaiting;
+            byService[row.service].waitingValues.push(rowWaiting);
+        }
     }
 
     cards.innerHTML = serviceList.map(service => {
         const item = byService[service];
-        const serviceWaitingValues = data
-            .filter(row => row.service === service)
-            .map(row => calculateWaitingMinutes(row.start, row.finish, row.waiting));
-        const avgWait = excelAverage(serviceWaitingValues).toFixed(1);
+        const avgWait = averageValues(item.waitingValues || []).toFixed(1);
 
         return `
             <div class="card">
@@ -2365,6 +2473,8 @@ function resetFilters() {
 
     document.getElementById("month").value =
         "all";
+    const monthButton = document.getElementById("monthPickerButton");
+    if (monthButton) monthButton.textContent = "ทั้งหมด";
 
     document.getElementById("date").value =
         "all";
@@ -2533,6 +2643,8 @@ document.getElementById("direction").addEventListener("change", () => {
 
 
 
+
+setupMonthPicker();
 
 /* =========================
    START
