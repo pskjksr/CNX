@@ -1,0 +1,2011 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CNX Airport LoS Dashboard</title>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, "Noto Sans Thai", sans-serif;
+    background: #f4f7fb;
+    color: #172b4d;
+}
+
+/* Header */
+.header {
+    background: linear-gradient(135deg, #0b3558, #1769aa);
+    color: white;
+    padding: 28px 36px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.header p {
+    margin: 8px 0 0;
+    opacity: 0.9;
+    font-size: 15px;
+}
+
+/* Container */
+.container {
+    max-width: 1500px;
+    margin: auto;
+    padding: 25px;
+}
+
+/* Status */
+.status {
+    margin-bottom: 18px;
+    color: #123b63;
+    font-weight: bold;
+    padding: 15px 18px;
+    background: #eef6ff;
+    border-left: 5px solid #1769aa;
+    border-radius: 10px;
+}
+
+/* Box */
+.box {
+    background: white;
+    border-radius: 16px;
+    padding: 22px;
+    margin-bottom: 20px;
+    box-shadow: 0 3px 15px rgba(16, 24, 40, 0.06);
+}
+
+.title {
+    font-size: 19px;
+    font-weight: 700;
+    margin-bottom: 18px;
+}
+
+/* Filters */
+.filters {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 14px;
+}
+
+label {
+    display: block;
+    font-size: 13px;
+    color: #667085;
+    margin-bottom: 7px;
+    font-weight: 600;
+}
+
+select,
+input[type="time"] {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid #d0d5dd;
+    border-radius: 9px;
+    background: white;
+    font-size: 14px;
+    color: #172b4d;
+    outline: none;
+    transition: 0.2s;
+}
+
+select:focus,
+input[type="time"]:focus {
+    border-color: #1769aa;
+    box-shadow: 0 0 0 3px rgba(23, 105, 170, 0.1);
+}
+
+/* Reset */
+.reset {
+    margin-top: 16px;
+    background: #eef2f6;
+    color: #344054;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.reset:hover {
+    background: #dfe5ec;
+}
+
+/* SharePoint */
+.month-links-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.month-link-btn {
+    background: #eef6ff;
+    color: #1769aa;
+    border: 1px solid #c7ddf2;
+    padding: 9px 17px;
+    border-radius: 22px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+.month-link-btn:hover {
+    background: #1769aa;
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* KPI */
+.kpis {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 25px;
+}
+
+.kpi {
+    background: white;
+    border-radius: 15px;
+    padding: 21px;
+    box-shadow: 0 3px 15px rgba(16, 24, 40, 0.06);
+    border-top: 4px solid #1769aa;
+}
+
+.kpi .t {
+    font-size: 13px;
+    color: #667085;
+    font-weight: 600;
+}
+
+.kpi .v {
+    font-size: 27px;
+    font-weight: 700;
+    color: #123b63;
+    margin-top: 8px;
+}
+
+/* Section */
+.section {
+    font-size: 21px;
+    font-weight: 700;
+    margin: 28px 0 15px;
+}
+
+/* Service Cards */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.card {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 3px 15px rgba(16, 24, 40, 0.06);
+    transition: 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 22px rgba(16, 24, 40, 0.1);
+}
+
+.card h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #123b63;
+}
+
+.muted {
+    color: #667085;
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+.grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.metric {
+    background: #f7f9fc;
+    border-radius: 10px;
+    padding: 12px;
+}
+
+.metric small {
+    display: block;
+    color: #667085;
+    margin-bottom: 5px;
+}
+
+.metric b {
+    font-size: 18px;
+    color: #123b63;
+}
+
+/* Table */
+.table-wrap {
+    overflow: auto;
+    max-height: 550px;
+    border: 1px solid #eaecf0;
+    border-radius: 10px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1000px;
+}
+
+th,
+td {
+    padding: 11px 12px;
+    border-bottom: 1px solid #eaecf0;
+    text-align: center;
+    white-space: nowrap;
+}
+
+th {
+    background: #f4f7fb;
+    font-size: 13px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    color: #344054;
+}
+
+td {
+    font-size: 13px;
+}
+
+tbody tr:hover {
+    background: #f8fbff;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 9px;
+    border-radius: 20px;
+    background: #eef4fa;
+    color: #123b63;
+    font-size: 12px;
+}
+
+/* Scrollbar */
+.table-wrap::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+}
+
+.table-wrap::-webkit-scrollbar-track {
+    background: #f1f3f5;
+}
+
+.table-wrap::-webkit-scrollbar-thumb {
+    background: #b8c4d1;
+    border-radius: 10px;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .filters {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .filters {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .kpis {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 15px;
+    }
+
+    .header {
+        padding: 22px 20px;
+    }
+
+    .header h1 {
+        font-size: 22px;
+    }
+
+    .filters,
+    .cards,
+    .kpis {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <h1>✈️ Chiang Mai International Airport</h1>
+    <p>Level of Service (LoS) Dashboard</p>
+</div>
+
+<div class="container">
+
+    <div id="status" class="status">
+        กำลังโหลดข้อมูลไฟล์ CNX LoS.xlsx อัตโนมัติ... ⏳
+    </div>
+
+    <div id="mainDashboard" style="display: none;">
+
+        <!-- FILTER -->
+        <div class="box">
+            <div class="title">🔎 ตัวกรองข้อมูลภาพรวม</div>
+
+            <div class="filters">
+
+                <div>
+                    <label>ปี</label>
+                    <select id="year">
+                        <option value="all">ทั้งหมด</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>เดือน</label>
+                    <select id="month">
+                        <option value="all">ทั้งหมด</option>
+                        <option value="1">มกราคม</option>
+                        <option value="2">กุมภาพันธ์</option>
+                        <option value="3">มีนาคม</option>
+                        <option value="4">เมษายน</option>
+                        <option value="5">พฤษภาคม</option>
+                        <option value="6">มิถุนายน</option>
+                        <option value="7">กรกฎาคม</option>
+                        <option value="8">สิงหาคม</option>
+                        <option value="9">กันยายน</option>
+                        <option value="10">ตุลาคม</option>
+                        <option value="11">พฤศจิกายน</option>
+                        <option value="12">ธันวาคม</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>เวลาเริ่ม</label>
+                    <input id="startTime" type="time">
+                </div>
+
+                <div>
+                    <label>เวลาสิ้นสุด</label>
+                    <input id="endTime" type="time">
+                </div>
+
+                <div>
+                    <label>เที่ยวบิน</label>
+                    <select id="flight">
+                        <option value="all">ทั้งหมด</option>
+                        <option value="International">International</option>
+                        <option value="Domestic">Domestic</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>ขาเข้า/ออก</label>
+                    <select id="direction">
+                        <option value="all">ทั้งหมด</option>
+                        <option value="Departure">ขาออก</option>
+                        <option value="Arrival">ขาเข้า</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Service</label>
+                    <select id="service">
+                        <option value="all">ทั้งหมด</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <button class="reset" onclick="resetFilters()">
+                ↻ ล้างตัวกรอง
+            </button>
+        </div>
+
+
+        <!-- SHAREPOINT -->
+        <div class="box">
+            <div class="title">🔗 ดูข้อมูลดิบแต่ละเดือน (SharePoint)</div>
+            <div class="month-links-container" id="monthLinksBox"></div>
+        </div>
+
+
+        <!-- KPI -->
+        <div class="kpis">
+
+            <div class="kpi">
+                <div class="t">จำนวน Passenger</div>
+                <div class="v" id="passenger">-</div>
+            </div>
+
+            <div class="kpi">
+                <div class="t">Avg. Waiting Time</div>
+                <div class="v" id="waiting">-</div>
+            </div>
+
+            <div class="kpi">
+                <div class="t">Avg. Service Time</div>
+                <div class="v" id="serviceTime">-</div>
+            </div>
+
+            <div class="kpi">
+                <div class="t">จำนวนรายการ</div>
+                <div class="v" id="records">-</div>
+            </div>
+
+        </div>
+
+
+        <!-- SERVICE AREAS -->
+        <div class="section">
+            Service Areas
+        </div>
+
+        <div id="cards" class="cards"></div>
+
+
+        <!-- TABLE -->
+        <div class="box" style="margin-top: 25px;">
+
+            <div class="title">
+                📋 รายละเอียดข้อมูล
+            </div>
+
+            <div id="rowCount" class="muted" style="margin-bottom: 12px;">
+                0 รายการ
+            </div>
+
+            <div class="table-wrap">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>ปี</th>
+                            <th>เดือน</th>
+                            <th>วันที่</th>
+                            <th>ประเภท</th>
+                            <th>ขาเข้า/ขาออก</th>
+                            <th>Service</th>
+                            <th>Start</th>
+                            <th>Finish</th>
+                            <th>Waiting</th>
+                            <th>Passenger</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tableBody"></tbody>
+
+                </table>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<script>
+
+const EXCEL_FILE = "CNX LoS.xlsx";
+
+
+/* =========================
+   MONTH
+========================= */
+
+const monthNames = {
+    1: "มกราคม",
+    2: "กุมภาพันธ์",
+    3: "มีนาคม",
+    4: "เมษายน",
+    5: "พฤษภาคม",
+    6: "มิถุนายน",
+    7: "กรกฎาคม",
+    8: "สิงหาคม",
+    9: "กันยายน",
+    10: "ตุลาคม",
+    11: "พฤศจิกายน",
+    12: "ธันวาคม"
+};
+
+
+/* =========================
+   SHAREPOINT LINKS
+========================= */
+
+const baseSharePoint =
+    "https://o365cmu-my.sharepoint.com/:x:/g/personal/salintip_ain_cmu_ac_th/IQBKHTSvvaTARISYnNkCFvu9AW7ueXj1gUnASjGdjB3BCSs?e=yT0DPf";
+
+const sheetLinks = {};
+
+[
+    "October 25",
+    "November 25",
+    "December 25",
+    "January 26",
+    "February 26",
+    "March 26",
+    "April 26",
+    "May 26",
+    "June 26",
+    "July 26",
+    "August 26",
+    "September 26",
+    "October 26",
+    "November 26",
+    "December 26"
+].forEach(month => {
+
+    sheetLinks[month] =
+        `${baseSharePoint}&ActiveCell=%27${month.replace(" ", "+")}%27%21A1`;
+
+});
+
+
+/* =========================
+   STATE
+========================= */
+
+const state = {
+    rows: [],
+    filtered: [],
+    source: "auto"
+};
+
+
+/* =========================
+   NUMBER
+========================= */
+
+function toNumeric(value) {
+
+    if (
+        value === null ||
+        value === undefined ||
+        value === ""
+    ) {
+        return 0;
+    }
+
+    if (typeof value === "number") {
+        return Number.isFinite(value) ? value : 0;
+    }
+
+    const cleaned = String(value)
+        .replace(/,/g, "")
+        .replace(/[^0-9.-]/g, "");
+
+    const num = Number(cleaned);
+
+    return Number.isFinite(num) ? num : 0;
+}
+
+
+/* =========================
+   TEXT
+========================= */
+
+function safeText(value) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+        return "";
+    }
+
+    return String(value).trim();
+}
+
+
+/* =========================
+   MONTH PARSER
+========================= */
+
+function parseMonthValue(value) {
+
+    if (
+        value === null ||
+        value === undefined ||
+        value === ""
+    ) {
+        return null;
+    }
+
+    if (typeof value === "number") {
+
+        return (
+            Number.isInteger(value) &&
+            value >= 1 &&
+            value <= 12
+        )
+            ? value
+            : null;
+    }
+
+    const s = String(value)
+        .trim()
+        .toLowerCase();
+
+    const direct = Number(s);
+
+    if (
+        Number.isInteger(direct) &&
+        direct >= 1 &&
+        direct <= 12
+    ) {
+        return direct;
+    }
+
+    const monthMap = {
+
+        jan: 1,
+        january: 1,
+
+        feb: 2,
+        february: 2,
+
+        mar: 3,
+        march: 3,
+
+        apr: 4,
+        april: 4,
+
+        may: 5,
+
+        jun: 6,
+        june: 6,
+
+        jul: 7,
+        july: 7,
+
+        aug: 8,
+        august: 8,
+
+        sep: 9,
+        sept: 9,
+        september: 9,
+
+        oct: 10,
+        october: 10,
+
+        nov: 11,
+        november: 11,
+
+        dec: 12,
+        december: 12
+
+    };
+
+    return monthMap[s] || null;
+}
+
+
+/* =========================
+   TIME
+========================= */
+
+function normalizeTime(value) {
+
+    if (
+        value === null ||
+        value === undefined ||
+        value === ""
+    ) {
+        return "";
+    }
+
+    const s = String(value).trim();
+
+    if (!s) {
+        return "";
+    }
+
+    /* 08:30 */
+    const timeMatch = s.match(/^(\d{1,2}):(\d{2})$/);
+
+    if (timeMatch) {
+
+        return `${String(timeMatch[1]).padStart(2, "0")}:${timeMatch[2]}`;
+    }
+
+    /* 08.30 */
+    const dotMatch = s.match(/^(\d{1,2})\.(\d{2})$/);
+
+    if (dotMatch) {
+
+        return `${String(dotMatch[1]).padStart(2, "0")}:${dotMatch[2]}`;
+    }
+
+    /* Excel / Date */
+    const date = new Date(`1970-01-01 ${s}`);
+
+    if (!Number.isNaN(date.getTime())) {
+
+        return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+    }
+
+    return s;
+}
+
+
+/* =========================
+   DATE
+========================= */
+
+function parseDateValue(value, year, month) {
+
+    if (
+        value === null ||
+        value === undefined ||
+        value === ""
+    ) {
+        return "";
+    }
+
+    const s = String(value).trim();
+
+    /* YYYY-MM-DD */
+    const isoMatch = s.match(
+        /(\d{4})[-/](\d{1,2})[-/](\d{1,2})/
+    );
+
+    if (isoMatch) {
+
+        return `${isoMatch[1]}-${String(isoMatch[2]).padStart(2, "0")}-${String(isoMatch[3]).padStart(2, "0")}`;
+    }
+
+    /* วันที่เป็นเลขอย่างเดียว เช่น 3 */
+    if (
+        /^\d{1,2}$/.test(s) &&
+        year &&
+        month
+    ) {
+
+        return `${year}-${String(month).padStart(2, "0")}-${String(s).padStart(2, "0")}`;
+    }
+
+    const d = new Date(s);
+
+    if (!Number.isNaN(d.getTime())) {
+
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    }
+
+    return s;
+}
+
+
+/* =========================
+   FLIGHT
+========================= */
+
+function normalizeFlight(value) {
+
+    const s = safeText(value).toLowerCase();
+
+    if (!s) {
+        return "International";
+    }
+
+    if (s.includes("dom")) {
+        return "Domestic";
+    }
+
+    if (s.includes("int")) {
+        return "International";
+    }
+
+    return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+
+/* =========================
+   DIRECTION
+========================= */
+
+function normalizeDirection(value) {
+
+    const s = safeText(value).toLowerCase();
+
+    if (!s) {
+        return "Arrival";
+    }
+
+    if (s.includes("dep")) {
+        return "Departure";
+    }
+
+    if (s.includes("arr")) {
+        return "Arrival";
+    }
+
+    if (s.includes("out")) {
+        return "Departure";
+    }
+
+    if (s.includes("in")) {
+        return "Arrival";
+    }
+
+    return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+
+/* =========================
+   DEMO DATA
+========================= */
+
+function buildDemoData() {
+
+    return [
+
+        {
+            year: 2026,
+            month: 1,
+            monthLabel: "มกราคม",
+            date: "2026-01-03",
+            flight: "International",
+            direction: "Arrival",
+            service: "Arrival Immigration",
+            start: "08:00",
+            finish: "08:22",
+            waiting: 22,
+            passenger: 340,
+            serviceTime: 18
+        },
+
+        {
+            year: 2026,
+            month: 1,
+            monthLabel: "มกราคม",
+            date: "2026-01-03",
+            flight: "Domestic",
+            direction: "Departure",
+            service: "Departure Security",
+            start: "09:15",
+            finish: "09:42",
+            waiting: 27,
+            passenger: 280,
+            serviceTime: 21
+        },
+
+        {
+            year: 2026,
+            month: 2,
+            monthLabel: "กุมภาพันธ์",
+            date: "2026-02-12",
+            flight: "International",
+            direction: "Departure",
+            service: "Check-in Counter",
+            start: "14:10",
+            finish: "14:40",
+            waiting: 30,
+            passenger: 420,
+            serviceTime: 24
+        }
+
+    ];
+}
+
+
+/* =========================
+   NORMALIZE ROW
+========================= */
+
+function normalizeRow(row) {
+
+    if (
+        !row ||
+        typeof row !== "object"
+    ) {
+        return null;
+    }
+
+    const findKey = (keys) => {
+
+        for (const key of keys) {
+
+            const found = Object.keys(row).find(
+                k => k.toLowerCase() === key.toLowerCase()
+            );
+
+            if (found) {
+                return row[found];
+            }
+        }
+
+        return null;
+    };
+
+
+    const yearRaw = findKey([
+        "year",
+        "ปี",
+        "Year"
+    ]);
+
+    const monthRaw = findKey([
+        "month",
+        "เดือน",
+        "Month"
+    ]);
+
+    const dateRaw = findKey([
+        "date",
+        "วันที่",
+        "day",
+        "Date"
+    ]);
+
+    const flightRaw = findKey([
+        "flight",
+        "flight type",
+        "type",
+        "ประเภท",
+        "Flight"
+    ]);
+
+    const directionRaw = findKey([
+        "direction",
+        "dir",
+        "ขาเข้า/ขาออก",
+        "Arrival/Departure",
+        "Direction"
+    ]);
+
+    const serviceRaw = findKey([
+        "service",
+        "service area",
+        "service area name",
+        "Service",
+        "Area"
+    ]);
+
+    const startRaw = findKey([
+        "start",
+        "start time",
+        "เวลาเริ่ม",
+        "Start"
+    ]);
+
+    const finishRaw = findKey([
+        "finish",
+        "end time",
+        "finish time",
+        "เวลาสิ้นสุด",
+        "Finish"
+    ]);
+
+    const waitingRaw = findKey([
+        "waiting",
+        "waiting time",
+        "avg waiting time",
+        "waiting time (min)",
+        "Waiting"
+    ]);
+
+    const serviceTimeRaw = findKey([
+        "service time",
+        "avg service time",
+        "service_time",
+        "Service Time"
+    ]);
+
+    const passengerRaw = findKey([
+        "passenger",
+        "passengers",
+        "passenger count",
+        "Passenger"
+    ]);
+
+
+    const yearMatch =
+        String(yearRaw || "").match(/\d{4}/);
+
+    const year =
+        Number(yearMatch?.[0] || new Date().getFullYear());
+
+
+    let month = parseMonthValue(monthRaw);
+
+    if (!month && dateRaw) {
+
+        const tempDate = new Date(String(dateRaw));
+
+        if (!Number.isNaN(tempDate.getTime())) {
+            month = tempDate.getMonth() + 1;
+        }
+    }
+
+
+    const service =
+        safeText(serviceRaw || "Unknown");
+
+
+    if (!service) {
+        return null;
+    }
+
+
+    return {
+
+        year,
+
+        month: month || 1,
+
+        monthLabel:
+            monthNames[month] || "เดือน",
+
+        date:
+            parseDateValue(
+                dateRaw || "",
+                year,
+                month || 1
+            ),
+
+        flight:
+            normalizeFlight(
+                flightRaw || "International"
+            ),
+
+        direction:
+            normalizeDirection(
+                directionRaw || "Arrival"
+            ),
+
+        service,
+
+        start:
+            normalizeTime(startRaw),
+
+        finish:
+            normalizeTime(finishRaw),
+
+        waiting:
+            toNumeric(waitingRaw),
+
+        passenger:
+            toNumeric(passengerRaw),
+
+        serviceTime:
+            toNumeric(
+                serviceTimeRaw || waitingRaw
+            )
+    };
+}
+
+
+/* =========================
+   MATRIX SHEET
+========================= */
+
+function parseMatrixSheet(sheet) {
+
+    const matrix =
+        XLSX.utils.sheet_to_json(
+            sheet,
+            {
+                header: 1,
+                defval: ""
+            }
+        );
+
+    if (
+        !matrix ||
+        matrix.length < 2
+    ) {
+        return [];
+    }
+
+
+    const headers =
+        matrix[0].map(
+            h => safeText(h).toLowerCase()
+        );
+
+
+    const rows = [];
+
+
+    for (
+        let i = 1;
+        i < matrix.length;
+        i++
+    ) {
+
+        const row = matrix[i];
+
+        if (
+            !row ||
+            row.every(
+                v => safeText(v) === ""
+            )
+        ) {
+            continue;
+        }
+
+
+        const obj = {};
+
+
+        headers.forEach(
+            (header, idx) => {
+
+                obj[header] =
+                    row[idx] ?? "";
+
+            }
+        );
+
+
+        const normalized =
+            normalizeRow(obj);
+
+
+        if (normalized) {
+            rows.push(normalized);
+        }
+    }
+
+
+    return rows;
+}
+
+
+/* =========================
+   GENERIC SHEET
+========================= */
+
+function parseGenericSheet(sheet) {
+
+    const json =
+        XLSX.utils.sheet_to_json(
+            sheet,
+            {
+                defval: "",
+                raw: false
+            }
+        );
+
+
+    if (
+        !json ||
+        !json.length
+    ) {
+        return [];
+    }
+
+
+    const rows = [];
+
+
+    for (const item of json) {
+
+        const normalized =
+            normalizeRow(item);
+
+        if (normalized) {
+            rows.push(normalized);
+        }
+    }
+
+
+    return rows;
+}
+
+
+/* =========================
+   WORKBOOK
+========================= */
+
+function extractRowsFromWorkbook(workbook) {
+
+    const rows = [];
+
+
+    for (
+        const sheetName of workbook.SheetNames
+    ) {
+
+        const sheet =
+            workbook.Sheets[sheetName];
+
+
+        const byJson =
+            parseGenericSheet(sheet);
+
+
+        if (byJson.length) {
+
+            rows.push(...byJson);
+
+            continue;
+        }
+
+
+        rows.push(
+            ...parseMatrixSheet(sheet)
+        );
+    }
+
+
+    return rows;
+}
+
+
+/* =========================
+   DATE FORMAT
+========================= */
+
+function formatDateThai(dateStr) {
+
+    if (!dateStr) {
+        return "-";
+    }
+
+
+    const d =
+        new Date(dateStr);
+
+
+    if (
+        Number.isNaN(d.getTime())
+    ) {
+        return dateStr;
+    }
+
+
+    return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+}
+
+
+/* =========================
+   NUMBER FORMAT
+========================= */
+
+function formatNumber(value) {
+
+    return new Intl.NumberFormat(
+        "en-US"
+    ).format(
+        Number(value || 0)
+    );
+}
+
+
+/* =========================
+   FILTER
+========================= */
+
+function getFilteredRows() {
+
+    const yearEl =
+        document.getElementById("year");
+
+    const monthEl =
+        document.getElementById("month");
+
+    const startTimeEl =
+        document.getElementById("startTime");
+
+    const endTimeEl =
+        document.getElementById("endTime");
+
+    const flightEl =
+        document.getElementById("flight");
+
+    const directionEl =
+        document.getElementById("direction");
+
+    const serviceEl =
+        document.getElementById("service");
+
+
+    const selectedYear =
+        yearEl.value;
+
+    const selectedMonth =
+        monthEl.value;
+
+    const startTime =
+        startTimeEl.value;
+
+    const endTime =
+        endTimeEl.value;
+
+    const selectedFlight =
+        flightEl.value;
+
+    const selectedDirection =
+        directionEl.value;
+
+    const selectedService =
+        serviceEl.value;
+
+
+    return state.rows.filter(row => {
+
+        const yearOk =
+            selectedYear === "all" ||
+            String(row.year) === String(selectedYear);
+
+
+        const monthOk =
+            selectedMonth === "all" ||
+            String(row.month) === String(selectedMonth);
+
+
+        const flightOk =
+            selectedFlight === "all" ||
+            row.flight === selectedFlight;
+
+
+        const directionOk =
+            selectedDirection === "all" ||
+            row.direction === selectedDirection;
+
+
+        const serviceOk =
+            selectedService === "all" ||
+            row.service === selectedService;
+
+
+        const startOk =
+            !startTime ||
+            !row.start ||
+            row.start >= startTime;
+
+
+        const endOk =
+            !endTime ||
+            !row.finish ||
+            row.finish <= endTime;
+
+
+        return (
+            yearOk &&
+            monthOk &&
+            flightOk &&
+            directionOk &&
+            serviceOk &&
+            startOk &&
+            endOk
+        );
+
+    });
+}
+
+
+/* =========================
+   POPULATE FILTERS
+========================= */
+
+function populateFilters() {
+
+    const years =
+        [
+            ...new Set(
+                state.rows.map(
+                    r => r.year
+                )
+            )
+        ]
+        .sort(
+            (a, b) => a - b
+        );
+
+
+    const yearEl =
+        document.getElementById("year");
+
+
+    yearEl.innerHTML =
+        `<option value="all">ทั้งหมด</option>` +
+        years
+            .map(
+                y =>
+                    `<option value="${y}">${y}</option>`
+            )
+            .join("");
+
+
+    const serviceEl =
+        document.getElementById("service");
+
+
+    const services =
+        [
+            ...new Set(
+                state.rows.map(
+                    r => r.service
+                )
+            )
+        ]
+        .sort();
+
+
+    serviceEl.innerHTML =
+        `<option value="all">ทั้งหมด</option>` +
+        services
+            .map(
+                s =>
+                    `<option value="${s}">${s}</option>`
+            )
+            .join("");
+}
+
+
+/* =========================
+   KPI
+========================= */
+
+function updateKpi(data) {
+
+    const totalPassenger =
+        data.reduce(
+            (sum, row) =>
+                sum + toNumeric(row.passenger),
+            0
+        );
+
+
+    const avgWaiting =
+        data.length
+            ? data.reduce(
+                (sum, row) =>
+                    sum + toNumeric(row.waiting),
+                0
+            ) / data.length
+            : 0;
+
+
+    const avgService =
+        data.length
+            ? data.reduce(
+                (sum, row) =>
+                    sum + toNumeric(row.serviceTime),
+                0
+            ) / data.length
+            : 0;
+
+
+    document.getElementById(
+        "passenger"
+    ).textContent =
+        formatNumber(totalPassenger);
+
+
+    document.getElementById(
+        "waiting"
+    ).textContent =
+        `${avgWaiting.toFixed(1)} min`;
+
+
+    document.getElementById(
+        "serviceTime"
+    ).textContent =
+        `${avgService.toFixed(1)} min`;
+
+
+    document.getElementById(
+        "records"
+    ).textContent =
+        formatNumber(data.length);
+}
+
+
+/* =========================
+   SERVICE CARDS
+========================= */
+
+function updateCards(data) {
+
+    const cards =
+        document.getElementById("cards");
+
+
+    const byService = {};
+
+
+    for (const row of data) {
+
+        if (!byService[row.service]) {
+
+            byService[row.service] = {
+
+                service: row.service,
+
+                records: 0,
+
+                passengers: 0,
+
+                waiting: 0
+
+            };
+        }
+
+
+        byService[row.service].records += 1;
+
+
+        byService[row.service].passengers +=
+            toNumeric(row.passenger);
+
+
+        byService[row.service].waiting +=
+            toNumeric(row.waiting);
+    }
+
+
+    const list =
+        Object.values(byService)
+            .sort(
+                (a, b) =>
+                    b.passengers -
+                    a.passengers
+            );
+
+
+    if (!list.length) {
+
+        cards.innerHTML = `
+            <div class="card">
+                <h3>ไม่มีข้อมูล</h3>
+                <div class="muted">
+                    ไม่มีรายการที่ตรงกับตัวกรอง
+                </div>
+            </div>
+        `;
+
+        return;
+    }
+
+
+    cards.innerHTML =
+        list.map(item => {
+
+            const avgWait =
+                item.records
+                    ? (
+                        item.waiting /
+                        item.records
+                    ).toFixed(1)
+                    : "0.0";
+
+
+            return `
+
+                <div class="card">
+
+                    <h3>
+                        ${item.service}
+                    </h3>
+
+                    <div class="muted">
+                        ${item.records} รายการ
+                    </div>
+
+                    <div class="grid2">
+
+                        <div class="metric">
+
+                            <small>
+                                Passenger
+                            </small>
+
+                            <b>
+                                ${formatNumber(
+                                    item.passengers
+                                )}
+                            </b>
+
+                        </div>
+
+
+                        <div class="metric">
+
+                            <small>
+                                Avg. Waiting
+                            </small>
+
+                            <b>
+                                ${avgWait} min
+                            </b>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }).join("");
+}
+
+
+/* =========================
+   TABLE
+========================= */
+
+function updateTable(data) {
+
+    const tableBody =
+        document.getElementById(
+            "tableBody"
+        );
+
+
+    const rowCount =
+        document.getElementById(
+            "rowCount"
+        );
+
+
+    rowCount.textContent =
+        `${data.length} รายการ`;
+
+
+    if (!data.length) {
+
+        tableBody.innerHTML = `
+
+            <tr>
+
+                <td colspan="10">
+                    ไม่มีข้อมูล
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+    }
+
+
+    tableBody.innerHTML =
+        data.map(row => `
+
+            <tr>
+
+                <td>
+                    ${row.year}
+                </td>
+
+                <td>
+                    ${monthNames[row.month] || row.month}
+                </td>
+
+                <td>
+                    ${formatDateThai(row.date)}
+                </td>
+
+                <td>
+                    ${row.flight}
+                </td>
+
+                <td>
+                    ${row.direction}
+                </td>
+
+                <td>
+                    ${row.service}
+                </td>
+
+                <td>
+                    ${row.start || "-"}
+                </td>
+
+                <td>
+                    ${row.finish || "-"}
+                </td>
+
+                <td>
+                    ${
+                        row.waiting
+                            ? `${row.waiting.toFixed(1)} min`
+                            : "-"
+                    }
+                </td>
+
+                <td>
+                    ${formatNumber(row.passenger)}
+                </td>
+
+            </tr>
+
+        `).join("");
+}
+
+
+/* =========================
+   DASHBOARD
+========================= */
+
+function updateDashboard() {
+
+    const filtered =
+        getFilteredRows();
+
+
+    state.filtered =
+        filtered;
+
+
+    updateKpi(filtered);
+
+    updateCards(filtered);
+
+    updateTable(filtered);
+}
+
+
+/* =========================
+   RESET
+========================= */
+
+function resetFilters() {
+
+    document.getElementById("year").value =
+        "all";
+
+    document.getElementById("month").value =
+        "all";
+
+    document.getElementById("startTime").value =
+        "";
+
+    document.getElementById("endTime").value =
+        "";
+
+    document.getElementById("flight").value =
+        "all";
+
+    document.getElementById("direction").value =
+        "all";
+
+    document.getElementById("service").value =
+        "all";
+
+
+    updateDashboard();
+}
+
+
+/* =========================
+   SHAREPOINT
+========================= */
+
+function renderMonthLinks() {
+
+    const box =
+        document.getElementById(
+            "monthLinksBox"
+        );
+
+
+    box.innerHTML =
+        Object.entries(sheetLinks)
+            .map(
+                ([month, url]) => {
+
+                    return `
+
+                        <a
+                            class="month-link-btn"
+                            href="${url}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            ${month}
+                        </a>
+
+                    `;
+
+                }
+            )
+            .join("");
+}
+
+
+/* =========================
+   LOAD EXCEL
+========================= */
+
+async function loadExcel() {
+
+    const statusEl =
+        document.getElementById(
+            "status"
+        );
+
+
+    const mainDashboard =
+        document.getElementById(
+            "mainDashboard"
+        );
+
+
+    try {
+
+        const response =
+            await fetch(
+                EXCEL_FILE,
+                {
+                    cache: "no-store"
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                `HTTP ${response.status}`
+            );
+        }
+
+
+        const buffer =
+            await response.arrayBuffer();
+
+
+        if (!buffer.byteLength) {
+
+            throw new Error(
+                "ไฟล์ Excel ว่าง"
+            );
+        }
+
+
+        const workbook =
+            XLSX.read(
+                buffer,
+                {
+                    type: "array"
+                }
+            );
+
+
+        const rows =
+            extractRowsFromWorkbook(
+                workbook
+            );
+
+
+        if (!rows.length) {
+
+            throw new Error(
+                "ไม่พบข้อมูลที่ใช้งานได้"
+            );
+        }
+
+
+        state.rows =
+            rows;
+
+
+        statusEl.textContent =
+            `โหลดข้อมูลจาก ${EXCEL_FILE} สำเร็จ: ${rows.length} รายการ`;
+
+
+        mainDashboard.style.display =
+            "block";
+
+
+        populateFilters();
+
+        renderMonthLinks();
+
+        updateDashboard();
+
+
+    } catch (error) {
+
+        console.error(
+            "Excel loading error:",
+            error
+        );
+
+
+        state.rows =
+            buildDemoData();
+
+
+        statusEl.textContent =
+            `ไม่สามารถอ่าน ${EXCEL_FILE} ได้ ระบบใช้ข้อมูลตัวอย่างเพื่อแสดง Dashboard`;
+
+
+        mainDashboard.style.display =
+            "block";
+
+
+        populateFilters();
+
+        renderMonthLinks();
+
+        updateDashboard();
+    }
+}
+
+
+/* =========================
+   FILTER EVENTS
+========================= */
+
+[
+    "year",
+    "month",
+    "startTime",
+    "endTime",
+    "flight",
+    "direction",
+    "service"
+
+].forEach(id => {
+
+    const el =
+        document.getElementById(id);
+
+
+    if (el) {
+
+        el.addEventListener(
+            "change",
+            updateDashboard
+        );
+
+
+        el.addEventListener(
+            "input",
+            updateDashboard
+        );
+    }
+
+});
+
+
+/* =========================
+   START
+========================= */
+
+window.addEventListener(
+    "DOMContentLoaded",
+    loadExcel
+);
+
+</script>
+
+</body>
+</html>
